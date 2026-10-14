@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Life Lab · Conway's Game of Life</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<aside class="rail">
+  <a class="brand" href="/" aria-label="Life Lab home"><span class="brand-icon">▦</span><span>LIFE<span class="mint">LAB</span><small>COMPUTATIONAL PLAYGROUND</small></span></a>
+  <div class="section-label">WORKSPACE</div>
+  <button class="nav active" data-view="simulation"><span>◈</span> Simulation <kbd>01</kbd></button>
+  <button class="nav" data-view="benchmark"><span>▥</span> Performance <kbd>02</kbd></button>
+  <button class="nav" data-view="guide"><span>⌘</span> How it works <kbd>03</kbd></button>
+  <div class="rail-bottom"><span class="tiny-dot"></span> HPC ASSIGNMENT<div>Python + NVIDIA CUDA</div><small>One rule. A world of possibilities.</small></div>
+</aside>
+<main>
+  <header class="topbar"><div>EXPERIMENTS <span>/</span> <b>Conway’s Game of Life</b></div><div class="connection"><i></i> LOCAL WORKSPACE</div></header>
+  <section class="page-heading"><div class="eyebrow">CELLULAR AUTOMATA / B3 · S23</div><h1>Small rules.<br class="mobile-break"> <span>Infinite possibilities.</span></h1><p>Explore emergent life. Compare the power of CPU and CUDA.</p><div class="heading-tag">EST. 1970 <span>↗</span></div></section>
+  <section id="simulation" class="view">
+    <div class="workspace">
+      <section class="panel controls"><div class="panel-title"><h2>Experiment setup</h2><span>01</span></div>
+        <label for="size">Preview grid <small>cells per side</small></label><select id="size"><option>32</option><option selected>64</option><option>128</option><option>256</option></select>
+        <label for="pattern">Starting pattern</label><select id="pattern"><option value="random">Random universe</option><option value="glider">Glider</option><option value="gosper-gun">Gosper glider gun</option><option value="r-pentomino">R-pentomino</option><option value="blinker">Blinker</option><option value="block">Still life · block</option><option value="empty">Empty · draw your own</option></select>
+        <label for="density">Population density <output id="density-value">25%</output></label><input id="density" type="range" min="5" max="70" value="25"><div class="range-caps"><span>SPARSE</span><span>DENSE</span></div>
+        <div class="two-fields"><div><label for="seed">Random seed</label><input id="seed" type="number" min="0" max="4294967295" value="42"></div><div><label for="boundary">Boundary</label><select id="boundary"><option value="wrap">Wrap around</option><option value="dead">Dead outside</option></select></div></div>
+        <button id="reset" class="secondary wide">↻ &nbsp; Reset universe</button>
+        <div class="divider"></div><label for="speed">Playback speed <output id="speed-value">10 gen/s</output></label><input id="speed" type="range" min="1" max="30" value="10">
+        <div class="engine-note"><span class="mint">⌁</span><div><b>Python CPU preview</b><p>Live view uses the same 2D-array engine as the benchmark.</p></div></div>
+      </section>
+      <section class="panel universe"><div class="universe-header"><div><span id="live-indicator" class="status-dot"></span><b id="play-state">PAUSED</b><span class="universe-name">The living grid</span></div><span id="grid-label" class="mono">64 × 64</span></div>
+        <div class="canvas-wrap"><canvas id="grid" width="768" height="768" aria-label="Game of Life grid. Pause and click to toggle cells."></canvas><span class="canvas-corner">B3/S23 <span>•</span> <span id="boundary-label">TOROIDAL</span></span></div>
+        <div class="universe-footer"><div class="play-controls"><button id="play" class="primary">▶ &nbsp; Start simulation</button><button id="step" class="icon-button" title="Advance one generation" aria-label="Advance one generation">▸|</button><button id="clear" class="icon-button" title="Clear grid" aria-label="Clear grid">⌫</button></div><span class="edit-hint">Pause & click to edit cells</span></div>
+      </section>
+    </div>
+    <div class="metrics"><div class="metric"><span>GENERATION</span><strong id="generation">0000</strong><small>Discrete time steps</small></div><div class="metric"><span>LIVING CELLS</span><strong id="alive">—</strong><small id="population">— of the universe</small></div><div class="metric"><span>COMPUTE ENGINE</span><strong class="engine-value">CPU <em>2D</em></strong><small>Vectorized NumPy arrays</small></div><div class="metric gpu-metric"><span>CUDA DEVICE</span><strong id="cuda-label" class="device-value">Checking…</strong><small id="cuda-detail">Detecting NVIDIA hardware</small></div></div>
+    <div class="bottom-line"><div><span class="legend-dot mint-bg"></span> Surviving cell <span class="legend-dot coral-bg"></span> New birth <span class="legend-dot dead-bg"></span> Empty space</div><button class="text-button" data-view="benchmark">Explore performance <span>↗</span></button></div>
+  </section>
+  <section id="benchmark" class="view" hidden>
+    <div class="panel benchmark-intro"><div><div class="eyebrow">THE SAME WORLD. TWO ENGINES.</div><h2>Measure the difference.</h2><p>100 generations. Identical input. No rendering overhead.</p></div><span class="experiment-badge">CPU <span>vs</span> CUDA</span></div>
+    <div class="bench-layout"><section class="panel controls"><div class="panel-title"><h2>Benchmark settings</h2><span>02</span></div>
+      <label for="bench-size">Grid size</label><select id="bench-size"><option value="suite">Scaling study · 128 → 1024</option><option>128</option><option>256</option><option>512</option><option>1024</option><option>2048</option></select>
+      <div class="two-fields"><div><label for="iterations">Iterations</label><input type="number" id="iterations" min="1" max="1000" value="100"></div><div><label for="repeats">Repeats</label><input type="number" id="repeats" min="1" max="10" value="5"></div></div>
+      <label for="mode">Compute mode</label><select id="mode"><option value="both">CPU + CUDA comparison</option><option value="cpu">CPU only</option><option value="cuda">CUDA only</option></select>
+      <label for="block">CUDA threads per block</label><select id="block"><option>32x8</option><option>16x16</option><option>8x8</option><option>32x16</option></select>
+      <div class="engine-note"><span class="mint">↗</span><div><b>Reproducible by design</b><p>Uses the setup seed, density and boundary. Benchmarks always start with a random grid, independent of the live canvas.</p></div></div>
+      <button id="run-benchmark" class="primary wide">↗ &nbsp; Run benchmark</button><p id="bench-state" class="small-note" role="status">Median of 5 runs · warmup excluded</p><progress id="bench-progress" max="1" value="0" hidden></progress>
+    </section><section class="panel results"><div class="panel-title"><h2>Performance results</h2><div class="exports"><button id="export-csv" class="text-button" disabled>↓ CSV</button><button id="export-json" class="text-button" disabled>↓ JSON</button></div></div>
+      <div id="no-results" class="empty-state"><div class="empty-chart"><i></i><i></i><i></i><i></i></div><h3>Let the numbers tell the story.</h3><p>Run an experiment to compare execution times.<br>Only real hardware measurements appear here.</p></div>
+      <div id="results-content" hidden><div class="chart-heading"><b>Median compute time</b><span><i class="legend-dot mint-bg"></i>CPU <i class="legend-dot coral-bg"></i>CUDA</span></div><div id="bars"></div><div class="table-scroll"><table><thead><tr><th>Grid</th><th>CPU ms</th><th>CUDA ms</th><th>Total speedup</th><th>Verified</th></tr></thead><tbody id="results-body"></tbody></table></div><p id="results-note" class="small-note"></p></div>
+      <div class="measurement-note"><b>What is measured?</b><p>Compute: CPU generation loop or CUDA event interval. Total: setup + compute + final output copy, including GPU transfers. Speedup = CPU total ÷ CUDA total. JSON includes individual runs and hardware details.</p></div>
+    </section></div>
+  </section>
+  <section id="guide" class="view" hidden><div class="panel guide-intro"><div class="eyebrow">A UNIVERSE IN FOUR RULES</div><h2>Life is a local decision.</h2><p>Each cell looks at its eight neighbours. Every cell updates simultaneously from the previous generation.</p><div class="rule-grid"><article><span>01</span><h3>Underpopulation</h3><p>A living cell with fewer than two living neighbours dies.</p></article><article><span>02</span><h3>Survival</h3><p>A living cell with two or three living neighbours survives.</p></article><article><span>03</span><h3>Overpopulation</h3><p>A living cell with more than three living neighbours dies.</p></article><article><span>04</span><h3>Birth</h3><p>An empty cell with exactly three living neighbours becomes alive.</p></article></div></div>
+    <div class="guide-columns"><article class="panel"><div class="eyebrow">01 / CPU</div><h2>2D arrays, less overhead.</h2><p>Each cell is a uint8 value. NumPy adds eight neighbouring slices into a reusable array, then applies the life rule to the whole grid. A padded border implements wrap-around or dead-outside boundaries.</p><pre>next = (neighbours == 3) OR
+       (alive AND neighbours == 2)</pre><p>A separate nested-loop implementation acts as an independent correctness reference.</p></article><article class="panel"><div class="eyebrow">02 / CUDA</div><h2>One cell. One GPU thread.</h2><p>A two-dimensional launch assigns a thread to each cell. Threads read the current grid and write a separate next grid. Buffers swap after each generation; the grid stays on the GPU throughout the experiment.</p><pre>column, row = cuda.grid(2)
+current, next = next, current</pre><p>Adjacent x threads access adjacent columns. Warmup removes first-compilation costs from timing.</p></article></div><p class="sources">Read more: <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noreferrer">Conway’s Game of Life ↗</a> <a href="https://nvidia.github.io/numba-cuda/user/kernels.html" target="_blank" rel="noreferrer">NVIDIA CUDA kernels ↗</a></p>
+  </section>
+  <footer>LIFE LAB <span>·</span> HIGH PERFORMANCE COMPUTING <span class="footer-right">Explore. Measure. Understand.</span></footer>
+</main><div id="toast" role="alert" hidden></div><script src="/app.js"></script>
+</body></html>

@@ -1,0 +1,49 @@
+name: Cross-platform tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.12', '3.13']
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: life lab
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: life lab
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: life lab/requirements*.txt
+      - name: Install desktop dependencies
+        run: python -m pip install -r requirements-desktop.txt
+      - name: Check environment and CPU execution
+        run: python app.py --check
+      - name: Unit and export tests
+        run: python -m unittest discover -s tests -v
+      - name: Headless normal Python experiment
+        run: python -m tools.run_experiment --mode cpu --iterations 4 --output "results/ci export/statistics.csv"
+      - name: Desktop GUI smoke test on Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a python -m tools.smoke_desktop --cpu-only
+      - name: Verify Bash launcher
+        if: runner.os != 'Windows'
+        run: bash run.sh --check
+      - name: Verify Windows launcher
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: run.bat --check
